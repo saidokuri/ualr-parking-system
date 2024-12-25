@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vehicle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --maroon: #6e2639;         /* Primary Maroon */
+            --light-maroon: #98344f;   /* Secondary Light Maroon */
+            --silver: #a7a9ac;         /* Primary Silver */
+            --dark-grey: #333333;      /* Dark Grey */
+            --light-grey: #eeeeee;     /* Background Grey */
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: var(--light-grey);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: var(--dark-grey);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            background-color: var(--maroon);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--light-maroon);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--maroon);
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <!-- flash messages -->
+
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="container">
+                {% for message in messages %}
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Success!</strong>
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+        <h1 class="text-2xl font-bold text-center mb-6" style="color: var(--maroon);">Add a New Vehicle</h1>
+        <form action="{{ url_for('add_vehicle') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Number Plate -->
+            <div class="form-group">
+                <label for="number_plate">Number Plate</label>
+                <input type="text" id="number_plate" name="number_plate" required>
+            </div>
+
+            <!-- Confirm Plate Number -->
+            <div class="form-group">
+                <label for="plate_number_confirm">Confirm Number Plate</label>
+                <input type="text" id="plate_number_confirm" name="plate_number_confirm" required>
+            </div>
+
+            <!-- Relationship -->
+            <div class="form-group">
+                <label for="relationship">Relationship</label>
+                <input type="text" id="relationship" name="relationship" placeholder="e.g., Owner, Family Member" required>
+            </div>
+
+            <!-- State Dropdown -->
+            <div class="form-group">
+                <label for="state">State</label>
+                <select id="state" name="state" required>
+                    <option value="" disabled selected>Select a State</option>
+                    {% for state in states %}
+                        <option value="{{ state }}">{{ state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Year -->
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="text" id="year" name="year" placeholder="e.g., 2022" required>
+            </div>
+
+            <!-- Make Dropdown -->
+            <div class="form-group">
+                <label for="make">Make</label>
+                <select id="make" name="make" required>
+                    <option value="" disabled selected>Select Make</option>
+                    {% for make in car_data.keys() %}
+                        <option value="{{ make }}">{{ make }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Model Dropdown -->
+            <div class="form-group">
+                <label for="model">Model</label>
+                <select id="model" name="model" required>
+                    <option value="" disabled selected>Select Model</option>
+                </select>
+            </div>
+
+            <!-- Color -->
+            <div class="form-group">
+                <label for="color">Color</label>
+                <input type="text" id="color" name="color" placeholder="e.g., Red" required>
+            </div>
+
+            <!-- Style Dropdown -->
+            <div class="form-group">
+                <label for="style">Style</label>
+                <select id="style" name="style" required>
+                    <option value="" disabled selected>Select Style</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="sm:col-span-2">
+                <button type="submit" class="submit-btn">Add Vehicle</button>
+            </div>
+        </form>
+        <a href="{{ url_for('user_dashboard') }}" class="back-link block text-center">Back to Dashboard</a>
+    </div>
+
+    <script>
+        const carData = {{ car_data|tojson }};
+        document.addEventListener('DOMContentLoaded', () => {
+            const makeDropdown = document.getElementById("make");
+            const modelDropdown = document.getElementById("model");
+            const styleDropdown = document.getElementById("style");
+
+            makeDropdown.addEventListener("change", () => {
+                const selectedMake = makeDropdown.value;
+                modelDropdown.innerHTML = '<option value="" disabled selected>Select Model</option>';
+                styleDropdown.innerHTML = '<option value="" disabled selected>Select Style</option>';
+
+                if (carData[selectedMake]) {
+                    Object.keys(carData[selectedMake]).forEach(model => {
+                        const option = document.createElement("option");
+                        option.value = model;
+                        option.textContent = model;
+                        modelDropdown.appendChild(option);
+                    });
+                }
+            });
+
+            modelDropdown.addEventListener("change", () => {
+                const selectedMake = makeDropdown.value;
+                const selectedModel = modelDropdown.value;
+                styleDropdown.innerHTML = '<option value="" disabled selected>Select Style</option>';
+
+                if (carData[selectedMake] && carData[selectedMake][selectedModel]) {
+                    carData[selectedMake][selectedModel].forEach(style => {
+                        const option = document.createElement("option");
+                        option.value = style;
+                        option.textContent = style;
+                        styleDropdown.appendChild(option);
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

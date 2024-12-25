@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Citations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --maroon: #6e2639;
+      --hover-maroon: #98344f;
+      --dark-grey: #333333;
+      --light-grey: #eeeeee;
+    }
+
+    body {
+      background-color: #eeeeee;
+    }
+
+    /* stuick foote rto bottim */
+    html {
+      height: 100%;
+    }
+    footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Navigation Bar -->
+  <nav class="bg-[var(--maroon)] p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-white">My Citations</h1>
+      <a href="{{ url_for('user_dashboard') }}" class="text-white bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition">
+        Back to Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto mt-8 p-4">
+    <h2 class="text-2xl font-bold mb-6 text-[var(--maroon)]">Citations</h2>
+
+    {% if citations %}
+    <table class="w-full border border-gray-300 bg-white">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2 border-b">Citation Number</th>
+          <th class="px-4 py-2 border-b">Plate Number</th>
+          <th class="px-4 py-2 border-b">Violation</th>
+          <th class="px-4 py-2 border-b">Fine Amount</th>
+          <th class="px-4 py-2 border-b">Issued At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for citation in citations %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border-b">{{ citation.citation_number }}</td>
+          <td class="px-4 py-2 border-b">{{ citation.vehicle_plate }}</td>
+          <td class="px-4 py-2 border-b">{{ citation.violation }}</td>
+          <td class="px-4 py-2 border-b">${{ citation.fine_amount }}</td>
+          <td class="px-4 py-2 border-b">{{ citation.issued_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-gray-600 mt-4">No citations found for your vehicles.</p>
+    {% endif %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 p-4 text-white text-center">
+    <div class="container mx-auto text-sm">
+      &copy; {{ current_year }} University of Arkansas at Little Rock Parking Portal. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

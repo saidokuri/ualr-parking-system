@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University of Arkansas at Little Rock - Parking Management Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --maroon: #6e2639;         /* Primary Maroon */
+      --silver: #a7a9ac;         /* Primary Silver */
+      --light-grey: #eeeeee;     /* Background Light Grey */
+      --dark-grey: #333333;      /* Secondary Dark Grey */
+      --hover-maroon: #98344f;   /* Hover State */
+    }
+
+    /* Hidden Admin Link */
+    .hidden-link {
+      text-decoration: none;
+      color: inherit;
+    }
+    .hidden-link:hover {
+      color: var(--hover-maroon);
+    }
+        /* Modal Styling */
+        .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 50;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5); /* Black with transparency */
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Navigation Bar -->
+  <nav class="shadow-md p-4" style="background-color: var(--maroon);">
+    <div class="container mx-auto flex items-center justify-between">
+      <!-- Heading -->
+      <div class="text-lg font-bold text-white">
+        University of Arkansas at Little Rock - Parking Portal
+      </div>
+      
+      <!-- Navigation Links -->
+      <div class="flex items-center space-x-4">
+        {% if session.get('user_id') %}
+          {% if session.get('role') == 'student' %}
+            <a href="/user_dashboard" class="text-white hover:text-gray-300 transition">Student Dashboard</a>
+          {% elif session.get('role') == 'faculty' %}
+            <a href="/faculty_dashboard" class="text-white hover:text-gray-300 transition">Faculty Dashboard</a>
+          {% elif session.get('role') == 'police' %}
+            <a href="/police_dashboard" class="text-white hover:text-gray-300 transition">Police Dashboard</a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
+            Logout
+          </a>
+        {% else %}
+          <a href="/login" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition">Login</a>
+        {% endif %}
+        <!-- Additional Links -->
+        <a href="https://ualr.edu/safety/campus-parking/" class="text-white hover:text-gray-300 transition">Parking Rules</a>
+        <a href="https://ualr.edu/about/files/2024/09/Parking-Map-2024.pdf" class="text-white hover:text-gray-300 transition">Parking Map</a>
+        <a href="https://ualr.edu/safety/contact/" class="text-white hover:text-gray-300 transition">Contact</a>
+      </div>
+    </div>
+  </nav>
+    
+  <!-- Main Content -->
+  <main class="container mx-auto mt-6 p-4 space-y-8">
+    <!-- Welcome Section -->
+    <section class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold" style="color: var(--maroon);">Welcome</h2>
+        {% if session.get('user_id') %}
+          <p class="text-gray-600 mt-4">
+            Welcome back, {{ session.get('role').capitalize() }}! You are logged in.
+          </p>
+        {% else %}
+          <p class="text-gray-600 mt-4">
+            Welcome to the University of Arkansas at Little Rock Parking Portal. Manage your campus parking permits, pay citations, and explore parking options with ease.
+          </p>
+        {% endif %}
+      </section>
+    <!-- Role-Based Sections -->
+    {% if session.get('role') == 'student' %}
+      <section class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold" style="color: var(--maroon);">Student Services</h2>
+        <p class="text-gray-600 mt-4">Access student-specific parking management and services.</p>
+      </section>
+    {% elif session.get('role') == 'faculty' %}
+      <section class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold" style="color: var(--maroon);">Faculty Dashboard</h2>
+        <p class="text-gray-600 mt-4">Manage faculty-specific parking permits and parking lot usage.</p>
+      </section>
+    {% elif session.get('role') == 'police' %}
+      <section class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold" style="color: var(--maroon);">Police Services</h2>
+        <p class="text-gray-600 mt-4">Monitor parking citations, security violations, and campus parking safety.</p>
+      </section>
+    {% endif %}
+
+
+    <!-- Citations Section -->
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-bold" style="color: var(--maroon);">Search Citations</h2>
+      <p class="text-gray-600 mt-4">Use the form below to search and view parking citations.</p>
+      <form id="searchCitationsForm" class="mt-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:space-x-4">
+          <div class="flex-1">
+            <label for="citation-number" class="block text-gray-600 font-medium">Citation Number</label>
+            <input
+              id="citation-number"
+              name="citation_number"
+              type="text"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter citation number"
+            />
+          </div>
+          <div class="flex-1">
+            <label for="plate-number" class="block text-gray-600 font-medium">Plate Number</label>
+            <input
+              id="plate-number"
+              name="plate_number"
+              type="text"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter plate number"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:space-x-4">
+          <div class="flex-1">
+            <label for="state" class="block text-gray-600 font-medium">State</label>
+            <select
+              id="state"
+              name="state"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select a state</option>
+              <option value="Arkansas">Arkansas</option>
+              <option value="Texas">Texas</option>
+              <option value="California">California</option>
+              <option value="New York">New York</option>
+              <option value="Florida">Florida</option>
+              <!-- Add other states -->
+            </select>
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="w-full sm:w-auto bg-[var(--maroon)] text-white px-6 py-3 rounded-lg hover:bg-[var(--hover-maroon)] transition"
+        >
+          Search Citations
+        </button>
+      </form>
+    </section>
+  <!-- Modal for Search Results -->
+  <div id="resultsModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 class="text-xl font-bold" style="color: var(--maroon);">Search Results</h2>
+      <div id="resultsContent" class="mt-4"></div>
+    </div>
+  </div>
+
+
+    <!-- Permits Section -->
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-bold text-gray-800">Permits</h2>
+      <p class="text-gray-600 mt-4">
+        Click the button below to explore and purchase parking permits for various parking lots across the campus.
+      </p>
+      <a
+  href="/user_get_permit"
+  class="mt-4 inline-block bg-[var(--maroon)] text-white px-6 py-3 rounded-lg hover:bg-[var(--hover-maroon)] transition"
+>
+  Get Permits
+</a>
+
+    </section>
+  </main>
+  <footer class="bg-white shadow-md p-4 mt-8">
+    <div class="container mx-auto text-center text-gray-600 text-sm space-y-2">
+      <p>
+        {{ current_year }} <a href="/admin_login" class="hidden-link">©</a> University of Arkansas at Little Rock Parking Portal. All rights reserved.
+      </p>
+      <p>
+        <a href="https://ualr-parking.onrender.com/static/sitemap.xml" class="text-gray-600 hover:text-gray-800 transition">Sitemap</a> | 
+        <a href="https://ualr.edu/safety/campus-parking/" class="text-gray-600 hover:text-gray-800 transition">Parking Rules</a> | 
+        <a href="https://ualr.edu/about/files/2024/09/Parking-Map-2024.pdf" class="text-gray-600 hover:text-gray-800 transition">Parking Map</a> | 
+        <a href="https://ualr.edu/safety/contact/" class="text-gray-600 hover:text-gray-800 transition">Contact Us</a>
+      </p>
+    </div>
+  </footer>
+  </body>
+
+<script>
+document.getElementById("searchCitationsForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const citationNumber = document.getElementById("citation-number").value;
+  const plateNumber = document.getElementById("plate-number").value;
+  const state = document.getElementById("state").value;
+
+  try {
+    // Construct the query string
+    const queryParams = new URLSearchParams({
+      citation_number: citationNumber,
+      plate_number: plateNumber,
+      state: state,
+    });
+
+    // Make the GET request with query parameters
+    const response = await fetch(`/search_citations?${queryParams.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    // Show the modal and populate results
+    const resultsModal = document.getElementById("resultsModal");
+    const resultsContent = document.getElementById("resultsContent");
+
+    resultsContent.innerHTML = ""; // Clear previous results
+
+    if (data.length > 0) {
+      const table = document.createElement("table");
+      table.className = "w-full border border-gray-300 mt-4 bg-white";
+
+      // Add table headers
+      const headers = `
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 border-b">Citation Number</th>
+            <th class="px-4 py-2 border-b">Plate Number</th>
+            <th class="px-4 py-2 border-b">State</th>
+            <th class="px-4 py-2 border-b">Violation</th>
+            <th class="px-4 py-2 border-b">Issued At</th>
+          </tr>
+        </thead>
+      `;
+      table.innerHTML = headers;
+
+      // Add table rows
+      const tbody = document.createElement("tbody");
+      data.forEach((citation) => {
+        console.log(citation);
+        const row = `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border-b">${citation.citation_number}</td>
+            <td class="px-4 py-2 border-b">${citation.vehicle_plate}</td>
+            <td class="px-4 py-2 border-b">${citation.car_details.state}</td>
+            <td class="px-4 py-2 border-b">${citation.violation}</td>
+            <td class="px-4 py-2 border-b">${citation.issued_at}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+
+      table.appendChild(tbody);
+      resultsContent.appendChild(table);
+    } else {
+      resultsContent.innerHTML = "<p class='text-gray-600'>No citations found.</p>";
+    }
+
+    resultsModal.style.display = "block";
+  } catch (error) {
+    console.error("Error fetching citations:", error);
+    alert("Failed to fetch citations. Please try again.");
+  }
+});
+
+// Close modal
+document.querySelector(".close").addEventListener("click", () => {
+  document.getElementById("resultsModal").style.display = "none";
+});
+
+</script>
+
+
+</html>

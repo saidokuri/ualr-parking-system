@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parking Lot Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --maroon: #6e2639;          /* Primary Maroon */
+      --hover-maroon: #98344f;    /* Light Maroon Hover */
+      --silver: #a7a9ac;          /* Primary Silver */
+      --dark-grey: #333333;       /* Dark Grey */
+    }
+
+    /* Stick footer to the bottom */
+    html {
+      position: relative;
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding-bottom: 6rem; /* Height of the footer */
+      background-color: #eeeeee; /* Light Grey Background */
+    }
+
+    footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 6rem; /* Height of the footer */
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- one flash message with close -->
+
+  <!-- Navigation Bar -->
+  <nav class="bg-[var(--maroon)] p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-white">Parking Lot Details</h1>
+      <a href="{{ url_for('police_dashboard') }}" class="text-white bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition">
+        Back to Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto mt-8 p-4">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-[var(--maroon)] mb-4">{{ lot.lot_name }}</h2>
+      <p class="text-gray-600 mb-2"><strong>Total Capacity:</strong> {{ lot.total_capacity }}</p>
+      <p class="text-gray-600 mb-2"><strong>Handicapped Slots:</strong> {{ lot.handicapped_slots }}</p>
+      <p class="text-gray-600 mb-2"><strong>Normal Slots:</strong> {{ lot.normal_slots }}</p>
+      <p class="text-gray-600 mb-2"><strong>Status:</strong> {{ lot.status }}</p>
+      <p class="text-gray-600 mb-2"><strong>Created At:</strong> {{ lot.created_at }}</p>
+    </div>
+
+     
+
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-xl font-bold text-[var(--maroon)] mb-4">Permit Details</h2>
+      <p class="text-gray-600 mb-2"><strong>Permit Name:</strong> {{ permit.permit_name }}</p>
+      <p class="text-gray-600 mb-2"><strong>Fee:</strong> ${{ permit.fee }}</p>
+      <p class="text-gray-600 mb-2"><strong>Start Date:</strong> {{ permit.start_date }}</p>
+      <p class="text-gray-600 mb-2"><strong>End Date:</strong> {{ permit.end_date }}</p>
+      <p class="text-gray-600 mb-2"><strong>Status:</strong> {{ permit.status }}</p>
+    </div>
+
+    <!-- Citation Form -->
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="bg-green-300 text-white p-4 text-center">
+            <p>{{ messages[0][1] }}</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+      
+  
+      <h2 class="text-xl font-bold text-[var(--maroon)] mb-4">Enter Citation</h2>
+      <form action="{{ url_for('submit_citation', lot_id=lot['_id']) }}" method="POST">
+        <div class="mb-4">
+          <label for="vehicle_plate" class="block text-gray-600 mb-2">Vehicle Plate Number</label>
+          <input
+            type="text"
+            id="vehicle_plate"
+            name="vehicle_plate"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-[var(--maroon)] focus:border-[var(--maroon)]"
+          />
+        </div>
+        <div class="mb-4">
+          <label for="violation" class="block text-gray-600 mb-2">Violation</label>
+          <textarea
+            id="violation"
+            name="violation"
+            required
+            rows="4"
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-[var(--maroon)] focus:border-[var(--maroon)]"
+          ></textarea>
+        </div>
+        <button
+          type="submit"
+          class="bg-[var(--maroon)] text-white px-6 py-3 rounded hover:bg-[var(--hover-maroon)] transition"
+        >
+          Submit Citation
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 p-4 text-white text-center">
+    <div class="container mx-auto text-sm">
+      &copy; {{ current_year }} University of Arkansas at Little Rock Parking Portal. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

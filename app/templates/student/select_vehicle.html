@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Vehicle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom UALR Color Scheme */
+        :root {
+            --maroon: #6e2639;         /* Primary Maroon */
+            --light-maroon: #98344f;   /* Secondary Light Maroon */
+            --silver: #a7a9ac;         /* Primary Silver */
+            --dark-grey: #333333;      /* Dark Grey */
+            --light-grey: #eeeeee;     /* Background Grey */
+        }
+
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+        body {
+            margin: 0;
+            padding-bottom: 100px;
+            background-color: var(--light-grey);
+        }
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background-color: var(--maroon);
+        }
+    </style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const vehicleInputs = document.querySelectorAll('input[name="vehicle_id"]');
+        const permitIdInput = document.querySelector('input[name="permit_id"]');
+        
+        vehicleInputs.forEach(input => {
+            input.addEventListener("change", async function () {
+                const selectedPermitId = permitIdInput.value;
+                const selectedVehicleId = this.value;
+
+                if (!selectedPermitId || !selectedVehicleId) {
+                    alert("Permit or Vehicle ID is missing.");
+                    location.reload(); // Reload the page to reset form
+                    return;
+                }
+
+                try {
+                    const response = await fetch("{{ url_for('validate_vehicle') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            permit_id: selectedPermitId,
+                            vehicle_id: selectedVehicleId
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message);
+                        location.reload(); // Reload the page to prevent further action
+                    } else {
+                        console.log("Validation successful!");
+                    }
+                } catch (error) {
+                    console.error("Error validating vehicle:", error);
+                    alert("An error occurred while validating your selection. Please try again.");
+                    location.reload(); // Reload the page to reset form
+                }
+            });
+        });
+    });
+</script>
+    
+</head>
+<body class="bg-light-grey min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold" style="color: var(--maroon);">
+                University of Arkansas at Little Rock Parking Portal
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto mt-8 p-4 bg-white shadow rounded">
+
+    <div class="p-6 rounded mt-6">
+    <h2 class="text-xl font-bold" style="color: var(--maroon);">Selected Permit Details</h2>
+    <div class="mt-4">
+        <p><strong>Permit Name:</strong> {{ permit.permit_name }}</p>
+        <p><strong>Fee:</strong> ${{ permit.fee }}</p>
+        <p><strong>Start Date:</strong> {{ permit.start_date }}</p>
+        <p><strong>End Date:</strong> {{ permit.end_date }}</p>
+        <p><strong>Status:</strong> {{ permit.status }}</p>
+    </div>
+</div>
+</main>
+
+
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 p-4 bg-white shadow rounded">
+        <div id="flashMessage" class="container mx-auto mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages[:1] %} <!-- Show only the first message -->
+                <div
+                    class="rounded-lg p-4 mb-4 text-center text-white {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Auto-hide the flash message after 5 seconds
+                const flashMessage = document.getElementById("flashMessage");
+                if (flashMessage) {
+                    setTimeout(() => {
+                        flashMessage.style.transition = "opacity 0.5s ease";
+                        flashMessage.style.opacity = "0";
+                        setTimeout(() => flashMessage.remove(), 500); // Remove it from DOM after fading out
+                    }, 5000);
+                }
+            });
+        </script>
+        
+            <!-- Permit Details Section -->
+
+        <h1 class="text-2xl font-bold" style="color: var(--maroon);">Select Your Vehicle for Permit</h1>
+        <p class="text-gray-600 mt-2">
+            Choose a vehicle from the list below to assign your permit.
+        </p>
+
+        {% if vehicles %}
+            <form method="post" action="{{ url_for('finalize_permit') }}" class="mt-6">
+                <input type="hidden" name="permit_id" value="{{ permit._id }}">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300">
+                        <thead>
+                            <tr class="bg-light-grey border-b">
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Select</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">State</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Plate Number</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Year</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Make</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Model</th>
+                                <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Color</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr class="hover:bg-gray-100">
+                                <td class="py-2 px-4">
+                                    <input type="radio" name="vehicle_id" value="{{ vehicle._id }}" class="focus:ring-maroon">
+                                </td>
+                                <td class="py-2 px-4">{{ vehicle.state }}</td>
+                                <td class="py-2 px-4">{{ vehicle.number_plate }}</td>
+                                <td class="py-2 px-4">{{ vehicle.year }}</td>
+                                <td class="py-2 px-4">{{ vehicle.make }}</td>
+                                <td class="py-2 px-4">{{ vehicle.model }}</td>
+                                <td class="py-2 px-4">{{ vehicle.color }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="mt-6 bg-maroon text-black px-6 py-3 rounded hover:bg-light-maroon transition">
+                    Next >>
+                </button>
+                    
+                <a href="{{ url_for('add_vehicle') }}" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+                    Add New Vehicle
+                </a>
+            </form>
+        {% else %}
+            <p class="text-center text-gray-600 mt-6">No vehicles found. Please add a vehicle to proceed.</p>
+            <div class="flex justify-center mt-6">
+                <a href="{{ url_for('add_vehicle') }}" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+                    Add New Vehicle
+                </a>
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--maroon)] text-white p-4">
+        <div class="container mx-auto text-center text-sm">
+            &copy; {{ current_year }} University of Arkansas at Little Rock Parking Portal. All rights reserved.
+        </div>
+    </footer>
+    
+</body>
+</html>

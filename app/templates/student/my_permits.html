@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Permits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --maroon: #6e2639;
+            --light-maroon: #98344f;
+            --silver: #a7a9ac;
+            --dark-grey: #333333;
+            --light-grey: #eeeeee;
+        }
+    </style>
+</head>
+<body class="bg-light-grey min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold" style="color: var(--maroon);">
+                University of Arkansas at Little Rock Parking Portal
+            </div>
+            <div class="space-x-4">
+                <a href="{{ url_for('user_dashboard') }}" class="px-4 py-2 bg-maroon text-black rounded hover:bg-light-maroon transition">
+                    Back to Home
+                </a>
+                <a href="{{ url_for('logout') }}" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 p-4 bg-white shadow rounded">
+        <h1 class="text-2xl font-bold" style="color: var(--maroon);">My Permits</h1>
+
+        {% if permits|length > 0 %}
+        <table class="mt-4 min-w-full border border-gray-300">
+            <thead>
+                <tr class="bg-light-grey">
+                    <th class="py-2 px-4 text-left">Permit Type</th>
+                    <th class="py-2 px-4 text-left">Valid Dates</th>
+                    <th class="py-2 px-4 text-left">Vehicle</th>
+                    <th class="py-2 px-4 text-left">Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for permit in permits %}
+                <tr>
+                    <td class="py-2 px-4">{{ permit.permit_details.type }}</td>
+                    <td class="py-2 px-4">{{ permit.permit_details.valid_dates }}</td>
+                    <td class="py-2 px-4">
+                        {{ permit.vehicle_details.make }} {{ permit.vehicle_details.model }} 
+                        ({{ permit.vehicle_details.number_plate }})
+                    </td>
+                    <td class="py-2 px-4">
+                        <a href="{{ url_for('download_permit') }}" class="px-4 py-2 bg-red text-blue rounded hover:bg-light-red transition">
+                            Download Permit
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-gray-600 mt-4">No permits found.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

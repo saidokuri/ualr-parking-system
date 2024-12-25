@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Cart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <style>
+        :root {
+            --maroon: #6e2639;
+            --light-maroon: #98344f;
+            --silver: #a7a9ac;
+            --dark-grey: #333333;
+            --light-grey: #eeeeee;
+        }
+
+        body {
+            background-color: var(--light-grey);
+            color: var(--dark-grey);
+        }
+
+        h2, p {
+            color: var(--maroon);
+        }
+
+        .btn-primary {
+            background-color: var(--maroon);
+            border-color: var(--maroon);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--light-maroon);
+            border-color: var(--light-maroon);
+        }
+
+        .btn-secondary {
+            background-color: var(--silver);
+            border-color: var(--silver);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--light-maroon);
+        }
+
+        .table thead {
+            background-color: var(--silver);
+        }
+
+        .table-bordered th, .table-bordered td {
+            border-color: var(--silver);
+        }
+
+        .form-control:focus {
+            border-color: var(--maroon);
+            box-shadow: 0 0 5px var(--maroon);
+        }
+    </style>
+    <script>
+        function toggleDetails(button, detailsId) {
+            const details = document.getElementById(detailsId);
+            if (details.style.display === "none") {
+                details.style.display = "block";
+                button.textContent = "hide details";
+            } else {
+                details.style.display = "none";
+                button.textContent = "view details";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">View Cart</h2>
+        <p class="text-center">Review your order and complete your purchase.</p>
+        <p class="text-center">
+            Select your payment method below and click <strong>Checkout</strong> to proceed.
+        </p>
+
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Qty</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.qty }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>
+                        {{ item.description }}
+                        <button type="button" class="btn btn-link btn-sm" onclick="toggleDetails(this, 'details-{{ loop.index }}')">
+                            view details
+                        </button>
+                        <div id="details-{{ loop.index }}" style="display: none; margin-top: 10px;">
+                            <p><strong>Valid for dates:</strong> {{ item.valid_dates }}</p>
+                            <p><strong>Item will be mailed to:</strong><br>{{ item.address }}</p>
+                            <p><strong>Valid for vehicles:</strong> {{ item.vehicle_details }}</p>
+                        </div>
+                    </td>
+                    <td>${{ "%.2f"|format(item.amount) }}</td>
+                    <td><button class="btn btn-danger btn-sm">Remove</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+                    </table>
+
+        <div class="text-right font-weight-bold">
+            Total Amount Due: ${{ "%.2f"|format(cart_items|sum(attribute='amount')) }}
+        </div>
+
+        <div class="alert alert-info mt-3">
+            <strong>Note:</strong> {{ temp_tag_note }}
+        </div>
+
+        <form method="post">
+            <div class="form-group mt-4">
+                <label for="payment_method">Select Payment Method</label>
+                <select id="payment_method" name="payment_method" class="form-control" required>
+                    <option value="" selected>Select One</option>
+                    <option value="master">Master</option>
+                    <option value="visa">Visa</option>
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('select_other_info') }}" class="btn btn-secondary">Cancel Purchase</a>
+                <button type="submit" class="btn btn-primary">Checkout</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

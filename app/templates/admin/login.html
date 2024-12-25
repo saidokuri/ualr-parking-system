@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --maroon: #6e2639;          /* Primary Maroon */
+            --hover-maroon: #98344f;    /* Light Maroon Hover */
+            --silver: #a7a9ac;          /* Primary Silver */
+            --dark-grey: #333333;       /* Dark Grey */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <!-- Login Container -->
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-6" style="color: var(--maroon);">
+            Admin Login
+        </h2>
+
+        <!-- Login Form -->
+        <form action="/admin_login" method="post">
+            <!-- Username/Email -->
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-medium">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[var(--maroon)]"
+                    placeholder="Enter your email" 
+                    required
+                />
+            </div>
+
+            <!-- Password -->
+            <div class="mb-6">
+                <label for="password" class="block text-gray-700 font-medium">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[var(--maroon)]"
+                    placeholder="Enter your password" 
+                    required
+                />
+            </div>
+
+            <!-- Login Button -->
+            <button 
+                type="submit" 
+                class="w-full bg-[var(--maroon)] text-white py-2 rounded hover:bg-[var(--hover-maroon)] transition">
+                Login
+            </button>
+
+            <!-- Links for Navigation -->
+            <div class="mt-6 flex justify-between items-center">
+                <a href="/" class="text-blue-600 hover:underline">Return to Home</a>
+                <a href="javascript:history.back()" 
+                   class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
+                    Back
+                </a>
+            </div>
+        </form>
+
+        <!-- Additional Options -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-600">
+                Don't have an account? 
+                <a href="/admin_register" class="text-blue-600 hover:underline">Register Here</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

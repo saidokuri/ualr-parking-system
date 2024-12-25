@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalize Permit Purchase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --maroon: #6e2639;
+            --light-maroon: #98344f;
+            --silver: #a7a9ac;
+            --dark-grey: #333333;
+            --light-grey: #eeeeee;
+        }
+
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+        body {
+            margin: 0;
+            padding-bottom: 100px;
+            background-color: var(--light-grey);
+        }
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background-color: var(--maroon);
+        }
+    </style>
+</head>
+<body class="bg-light-grey min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold" style="color: var(--maroon);">
+                University of Arkansas at Little Rock Parking Portal
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 p-4 bg-white shadow rounded">
+        <h1 class="text-2xl font-bold" style="color: var(--maroon);">Finalize Your Permit Purchase</h1>
+        <p class="text-gray-600 mt-2">
+            Please review the details below before confirming your purchase.
+        </p>
+
+        <!-- Permit Details Section -->
+        <div class="bg-white p-6 rounded shadow-md mt-6">
+            <h2 class="text-xl font-bold" style="color: var(--maroon);">Permit Details</h2>
+            <div class="mt-4">
+                <p><strong>Permit Name:</strong> {{ permit.permit_name }}</p>
+                <p><strong>Fee:</strong> ${{ permit.fee }}</p>
+                <p><strong>Start Date:</strong> {{ permit.start_date }}</p>
+                <p><strong>End Date:</strong> {{ permit.end_date }}</p>
+                <p><strong>Status:</strong> {{ permit.status }}</p>
+            </div>
+        </div>
+
+        <!-- Vehicle Details Section -->
+        <div class="bg-white p-6 rounded shadow-md mt-6">
+            <h2 class="text-xl font-bold" style="color: var(--maroon);">Vehicle Details</h2>
+            <div class="mt-4">
+                <p><strong>State:</strong> {{ vehicle.state }}</p>
+                <p><strong>Plate Number:</strong> {{ vehicle.number_plate }}</p>
+                <p><strong>Year:</strong> {{ vehicle.year }}</p>
+                <p><strong>Make:</strong> {{ vehicle.make }}</p>
+                <p><strong>Model:</strong> {{ vehicle.model }}</p>
+                <p><strong>Color:</strong> {{ vehicle.color }}</p>
+            </div>
+        </div>
+
+        <!-- Confirmation Form -->
+<!-- Confirmation Form -->
+<form method="post" action="{{ url_for('select_other_info') }}" class="mt-6">
+    <button type="submit" class="mt-6 bg-maroon text-black px-6 py-3 rounded hover:bg-light-maroon transition">
+        Confirm Purchase
+    </button>
+</form>
+
+
+
+
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                async function checkAvailability() {
+                    try {
+                        const response = await fetch("{{ url_for('check_availability') }}", {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json"
+                            }
+                        });
+        
+                        const result = await response.json();
+        
+                        if (result.success) {
+                            const availableSlots = result.available_slots;
+        
+                            if (availableSlots <= 0) {
+                                alert("No reserved slots available. Please contact administration for more information.");
+                                // Optionally disable the "Confirm Purchase" button
+                                const confirmButton = document.querySelector("button[type='submit']");
+                                if (confirmButton) {
+                                    confirmButton.disabled = true;
+                                }
+                            } else {
+                                console.log(`Available slots: ${availableSlots}`);
+                            }
+                        } else {
+                            console.error("Failed to fetch availability:", result.message);
+                        }
+                    } catch (error) {
+                        console.error("Error checking availability:", error);
+                    }
+                }
+        
+                // Call the function on page load
+                checkAvailability();
+        
+                // Re-check availability on form submission (optional)
+                const form = document.querySelector("form");
+                if (form) {
+                    form.addEventListener("submit", async function (event) {
+                        const response = await fetch("{{ url_for('check_availability') }}");
+                        const result = await response.json();
+                        if (result.success && result.available_slots <= 0) {
+                            event.preventDefault();
+                            alert("No reserved slots available. Please contact administration for more information.");
+                        }
+                    });
+                }
+            });
+        </script>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--maroon)] text-white p-4">
+        <div class="container mx-auto text-center text-sm">
+            &copy; {{ current_year }} University of Arkansas at Little Rock Parking Portal. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

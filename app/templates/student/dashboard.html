@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Permit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom UA Little Rock Color Scheme */
+        :root {
+            --maroon: #6e2639;         /* Primary Maroon */
+            --silver: #a7a9ac;         /* Primary Silver */
+            --light-maroon: #98344f;   /* Secondary Light Maroon */
+            --dark-grey: #333333;      /* Secondary Dark Grey */
+            --light-grey: #eeeeee;     /* Background Grey */
+        }
+        /* footer stick to bottom */
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+        body {
+            margin: 0;
+            padding-bottom: 100px;
+        }
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Custom Styling */
+        .bg-light-grey {
+            background-color: var(--light-grey);
+        }
+        
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const permitInputs = document.querySelectorAll('input[name="permit_id"]');
+    
+            permitInputs.forEach(input => {
+                input.addEventListener("change", async function () {
+                    const selectedPermitId = this.value;
+    
+                    try {
+                        const response = await fetch("{{ url_for('set_selected_permit') }}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                permit_id: selectedPermitId
+                            })
+                        });
+    
+                        const result = await response.json();
+    
+                        if (result.success) {
+                            console.log("Selected permit set in session successfully.");
+                        } else {
+                            alert("Failed to set the selected permit in session.");
+                        }
+                    } catch (error) {
+                        console.error("Error setting selected permit in session:", error);
+                        alert("An error occurred while setting the permit in session. Please try again.");
+                    }
+                });
+            });
+        });
+    </script>
+    
+</head>
+<body class="bg-light-grey min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold" style="color: var(--maroon);">
+                University of Arkansas at Little Rock Parking Portal
+            </div>
+            <div class="space-x-4">
+                <a href="{{ url_for('my_permits') }}" class="px-4 py-2 bg-maroon text-maroon rounded hover:bg-light-maroon transition">
+                    My Permits
+                </a>
+                <a href="{{ url_for('my_citations') }}" class="px-4 py-2 bg-maroon text-maroon rounded hover:bg-light-maroon transition">
+                    My Citations
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 p-4 bg-white shadow rounded">
+        <h1 class="text-2xl font-bold" style="color: var(--maroon);">Select Permit and Permit Agreement</h1>
+        <p class="text-gray-600 mt-2">
+            Choose the permit you wish to purchase and after reading the permit agreement, click "Next".
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+            *A $3.95 Shipping and Handling fee will be applied at checkout.
+        </p>
+
+        <!-- Permit Table -->
+        <form method="post" action="{{ url_for('select_vehicle') }}">
+            <div class="mt-6 overflow-x-auto">
+                <table class="min-w-full border border-gray-300">
+                    <thead>
+                        <tr class="bg-light-grey border-b">
+                            <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Select</th>
+                            <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Permit Name</th>
+                            <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Permit Fee</th>
+                            <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">Start Date</th>
+                            <th class="py-2 px-4 text-left" style="color: var(--dark-grey);">End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for permit in permits %}
+                        <tr>
+                            <td class="py-2 px-4">
+                                <input type="radio" name="permit_id" value="{{ permit['_id'] }}" required class="focus:ring-maroon">
+                            </td>
+                            <td class="py-2 px-4">{{ permit['permit_name'] }}</td>
+                            <td class="py-2 px-4">${{ permit['fee'] }}</td>
+                            <td class="py-2 px-4">{{ permit['start_date'] }}</td>
+                            <td class="py-2 px-4">{{ permit['end_date'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        
+            <!-- Agreement Checkboxes -->
+            <div class="mt-6 space-y-4">
+                <label class="flex items-start">
+                    <input type="checkbox" name="agreement1" required class="mt-1 focus:ring-maroon">
+                    <span class="ml-2 text-gray-700">
+                        I agree to abide by parking & traffic rules and regulations while operating a vehicle on University property.
+                    </span>
+                </label>
+                <label class="flex items-start">
+                    <input type="checkbox" name="agreement2" required class="mt-1 focus:ring-maroon">
+                    <span class="ml-2 text-gray-700">
+                        I agree that my permit may not be transferred to another user.
+                    </span>
+                </label>
+                <label class="flex items-start">
+                    <input type="checkbox" name="agreement3" required class="mt-1 focus:ring-maroon">
+                    <span class="ml-2 text-gray-700">
+                        I agree that my parking rights may be revoked if I fail to abide by University of Arkansas at Little Rock parking & traffic rules and regulations.
+                    </span>
+                </label>
+            </div>
+        
+
+            <!-- Reserved Parking Lots Section -->
+            <div id="reservedParkingSection" class="mt-8 bg-white p-6 rounded shadow hidden">
+                <h2 class="text-xl font-bold" style="color: var(--maroon);">Reserved Parking Lots</h2>
+                <p class="text-gray-600 mt-2">
+                    As a <span class="font-bold">{{ user_role }}</span>, you are allowed to park in the following locations:     
+                    {% if reserved_lots %}
+                        {% for lot in reserved_lots %}
+                        <span>{{ lot.lot_name }}</span>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-gray-600 mt-4">No reserved parking lots available for your role.</span>
+                    {% endif %}
+                </p>
+            </div>
+
+
+            <div id="openParkingSection" class="mt-8 bg-white p-6 rounded shadow hidden">
+                <h2 class="text-xl font-bold" style="color: var(--maroon);">Open Parking Lots</h2>
+                <p class="text-gray-600 mt-2">
+                    The following parking lots are open for general use:
+                    {% if open_lots %}
+                        {% for lot in open_lots %}
+                            <span>{{ lot.lot_name }}</span>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-gray-600 mt-4">No open parking lots available.</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const permitInputs = document.querySelectorAll('input[name="permit_id"]');
+                    const reservedParkingSection = document.getElementById("reservedParkingSection");
+                    const openParkingSection = document.getElementById("openParkingSection");
+                    
+                    permitInputs.forEach(input => {
+                        input.addEventListener("change", function () {
+                            const permitName = this.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+                            if (permitName === "Reserved Permit") {
+                                reservedParkingSection.classList.remove("hidden");
+                                openParkingSection.classList.add("hidden");
+                            } else if (permitName === "2024-2025 Commuter Permit") {
+                                reservedParkingSection.classList.add("hidden");
+                                openParkingSection.classList.remove("hidden");
+                            } else {
+                                reservedParkingSection.classList.add("hidden");
+                                openParkingSection.classList.add("hidden");
+                            }
+                        });
+                    });
+                });
+            </script>
+                        
+
+            <!-- Next Button -->
+            <div class="mt-6">
+                <button type="submit" class="inline-block bg-maroon text-red px-6 py-3 rounded-lg hover:bg-light-maroon transition">
+                    Next >>
+                </button>
+            </div>
+        </form>
+                </div>
+   
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white shadow p-4 mt-8">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center text-gray-600">
+            <div class="text-sm">
+                &copy; {{ current_year }} University of Arkansas at Little Rock Parking Portal. All rights reserved.
+            </div>
+            <div class="flex mt-4 sm:mt-0 space-x-4">
+                <a href="/faq" class="hover:underline text-gray-600">FAQs</a>
+                <a href="/contact" class="hover:underline text-gray-600">Contact Us</a>
+                <a href="{{ url_for('logout') }}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
